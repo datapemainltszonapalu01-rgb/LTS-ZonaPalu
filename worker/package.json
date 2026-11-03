@@ -1,0 +1,13 @@
+{
+  "name": "lts-palu-cloudflare-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --config wrangler.jsonc",
+    "deploy": "wrangler deploy --config wrangler.jsonc",
+    "tail": "wrangler tail lts-palu-api"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

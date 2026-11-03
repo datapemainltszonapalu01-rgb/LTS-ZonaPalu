@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liga Top Skor Zona Palu (LTS Palu)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ltsNavy: '#0f172a',
+                        ltsBlue: '#1d4ed8',
+                        ltsRed: '#dc2626',
+                        ltsLightBlue: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html5-qrcode for scanning -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- jspdf for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="./config.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 50%, #dc2626 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        /* Printable Card Size A5 styling */
+        @media print {
+            body * { visibility: hidden; }
+            #printableArea, #printableArea * { visibility: visible; }
+            #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-slate-900 text-white sticky top-0 z-50 shadow-md border-b-2 border-red-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchPage('home')">
+                    <div class="w-12 h-12 bg-white rounded-full p-1 flex items-center justify-center border-2 border-blue-600 shadow-md overflow-hidden">
+                        <img src="https://drive.google.com/thumbnail?id=1UA3wE07nS2zXled4MYCIK-VuLTxyW-r9&sz=w256" alt="Logo Zona Palu" class="w-full h-full object-contain rounded-full" referrerpolicy="no-referrer">
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-xl tracking-wider text-white block leading-none">LIGA TOP SKOR</span>
+                        <span class="text-xs text-blue-400 font-bold tracking-widest uppercase">ZONA PALU</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <button onclick="switchPage('home')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/30 hover:text-blue-300 transition">Beranda</button>
+                    <button onclick="switchPage('berita')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/30 hover:text-blue-300 transition">Berita</button>
+                    <button onclick="switchPage('galeri')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/30 hover:text-blue-300 transition">Galeri</button>
+                    <button onclick="switchPage('cek-nisn')" class="nav-btn px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600/30 hover:text-blue-300 transition"><i class="fa-solid fa-magnifying-glass mr-1"></i> Cek Player</button>
+                    <button onclick="switchPage('daftar-tim')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition"><i class="fa-solid fa-shield-halved mr-1"></i> Daftar Tim</button>
+                    <button onclick="switchPage('daftar-pemain')" class="px-3 py-2 rounded-lg text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition"><i class="fa-solid fa-user-plus mr-1"></i> Daftar Pemain</button>
+                    <button onclick="switchPage('login-tim')" class="px-3 py-2 rounded-lg text-sm font-semibold border border-blue-400 text-blue-300 hover:bg-blue-900/50 transition">Dashboard Tim</button>
+                    <button onclick="switchPage('login-admin')" class="px-2 py-2 text-slate-400 hover:text-white"><i class="fa-solid fa-lock text-base"></i></button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="text-slate-300 hover:text-white p-2">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div id="mobileMenu" class="hidden md:hidden bg-slate-800 border-t border-slate-700 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchPage('home'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 text-slate-200 hover:bg-slate-700 rounded">Beranda</button>
+            <button onclick="switchPage('berita'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 text-slate-200 hover:bg-slate-700 rounded">Berita</button>
+            <button onclick="switchPage('galeri'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 text-slate-200 hover:bg-slate-700 rounded">Galeri</button>
+            <button onclick="switchPage('cek-nisn'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 text-blue-400 hover:bg-slate-700 rounded">Cek Status Pemain</button>
+            <button onclick="switchPage('daftar-tim'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 bg-blue-600 text-white rounded">Daftar Tim</button>
+            <button onclick="switchPage('daftar-pemain'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 bg-red-600 text-white rounded">Daftar Pemain</button>
+            <button onclick="switchPage('login-tim'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 bg-slate-700 text-slate-200 rounded">Dashboard Tim</button>
+            <button onclick="switchPage('login-admin'); toggleMobileMenu()" class="block w-full text-left py-2 px-3 text-red-400 font-bold hover:bg-slate-700 rounded">Portal Admin</button>
+        </div>
+    </nav>
+
+    <!-- NOTIFICATION ALERT BAR -->
+    <div id="alertBox" class="hidden max-w-7xl mx-auto mt-4 px-4">
+        <div id="alertContent" class="p-4 rounded-xl text-white font-medium flex justify-between items-center shadow-lg">
+            <span id="alertMessage">Pesan Notifikasi</span>
+            <button onclick="hideAlert()" class="text-white text-lg hover:opacity-75"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow">
+        
+        <!-- ================= PAGE 1: BERANDA ================= -->
+        <section id="page-home" class="page-content">
+            <!-- Hero Banner -->
+            <div class="hero-gradient text-white py-16 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
+                <div class="relative z-10 max-w-4xl mx-auto space-y-6">
+                    <span class="bg-red-600 text-white text-xs uppercase font-extrabold px-4 py-1.5 rounded-full tracking-wider shadow">Ajang Pembinaan Sepakbola Usia Muda</span>
+                    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight">LIGA TOP SKOR ZONA PALU</h1>
+                    <p id="heroNarrative" class="text-lg sm:text-xl text-blue-100 font-light leading-relaxed">
+                        Wadah resmi kompetisi sepak bola bereputasi nasional di Kota Palu, Sulawesi Tengah. Mencetak talenta muda unggul dan berprestasi menuju pentas profesional.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4 pt-4">
+                        <button onclick="switchPage('daftar-tim')" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg transition transform hover:-translate-y-0.5">
+                            <i class="fa-solid fa-shield-halved mr-2"></i> Daftar Tim Sekarang
+                        </button>
+                        <button onclick="switchPage('cek-nisn')" class="bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-md text-white px-8 py-3.5 rounded-xl font-bold transition">
+                            <i class="fa-solid fa-magnifying-glass mr-2"></i> Cek Status Pemain
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News & Announcements Preview -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-slate-900 border-l-4 border-blue-600 pl-3">Informasi & Berita Terbaru</h2>
+                    <button onclick="switchPage('berita')" class="text-blue-600 font-semibold hover:underline">Lihat Semua <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <div id="homeNewsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Dynamic News Inject -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: BERITA ================= -->
+        <section id="page-berita" class="page-content hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-6 border-l-4 border-red-600 pl-3">Berita & Pengumuman</h2>
+            <div id="newsListGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Dynamic Full News Inject -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: GALERI ================= -->
+        <section id="page-galeri" class="page-content hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-6 border-l-4 border-blue-600 pl-3">Galeri Foto Kegiatan</h2>
+            <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Dynamic Gallery Inject -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 4: CEK STATUS PEMAIN (NISN) ================= -->
+        <section id="page-cek-nisn" class="page-content hidden max-w-3xl mx-auto px-4 py-12">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="bg-slate-900 text-white p-6 text-center border-b-4 border-blue-600">
+                    <i class="fa-solid fa-address-card text-4xl text-blue-400 mb-2"></i>
+                    <h2 class="text-2xl font-bold">Cek Status Pemain</h2>
+                    <p class="text-sm text-slate-400">Masukkan nomor NISN untuk memverifikasi data resmi pemain</p>
+                </div>
+                <div class="p-6 sm:p-8">
+                    <div class="flex gap-2 mb-6">
+                        <input type="text" id="inputCekNISN" placeholder="Masukkan 10 digit NISN..." class="flex-grow px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                        <button onclick="prosesCekNISN()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition">Cari</button>
+                    </div>
+                    <div id="hasilCekNISN" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-6 space-y-4">
+                        <!-- Result render here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 5: FORM PENDAFTARAN TIM ================= -->
+        <section id="page-daftar-tim" class="page-content hidden max-w-3xl mx-auto px-4 py-10">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="bg-blue-900 text-white p-6 border-b-4 border-red-600">
+                    <h2 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-shield-halved text-red-500"></i> Form Pendaftaran Tim Baru</h2>
+                    <p class="text-xs text-blue-200 mt-1">Lengkapi data official, pilih kategori usia, dan buat akun manajemen tim.</p>
+                </div>
+                <form id="formTim" onsubmit="handleFormTim(event)" class="p-6 sm:p-8 space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nama Tim *</label>
+                            <input type="text" id="timNama" required placeholder="Contoh: Palu Youth FC" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Kategori Usia *</label>
+                            <select id="timKategoriSelect" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                                <option value="">-- Pilih Kategori Usia --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Logo Tim (Format PNG/JPEG) *</label>
+                        <input type="file" id="timLogo" accept="image/png, image/jpeg" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-slate-50">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Pelatih (Wajib) *</label>
+                            <input type="text" id="timPelatih" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Asst. Pelatih (Opsional)</label>
+                            <input type="text" id="timAsst" class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Medis (Opsional)</label>
+                            <input type="text" id="timMedis" class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Kitman (Opsional)</label>
+                            <input type="text" id="timKitman" class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                    </div>
+
+                    <!-- User Pass Account Generation -->
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl space-y-3">
+                        <span class="text-xs font-bold text-blue-900 uppercase tracking-wide block"><i class="fa-solid fa-key mr-1"></i> Buat Akun Login Tim</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Username Tim *</label>
+                                <input type="text" id="timUsername" required class="w-full px-3 py-2 rounded border border-slate-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Password Tim *</label>
+                                <input type="password" id="timPassword" required class="w-full px-3 py-2 rounded border border-slate-300">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                        Daftarkan Tim Baru
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 6: FORM PENDAFTARAN PEMAIN ================= -->
+        <section id="page-daftar-pemain" class="page-content hidden max-w-4xl mx-auto px-4 py-10">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="bg-red-700 text-white p-6 border-b-4 border-blue-900">
+                    <h2 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-user-plus"></i> Form Pendaftaran Pemain Baru</h2>
+                    <p class="text-xs text-red-100 mt-1">Hanya tim terverifikasi yang dapat dipilih dalam formulir ini.</p>
+                </div>
+                <form id="formPemain" onsubmit="handleFormPemain(event)" class="p-6 sm:p-8 space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Pilih Tim Terverifikasi *</label>
+                        <select id="pemainTimSelect" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white">
+                            <option value="">-- Pilih Tim --</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nama Lengkap Pemain *</label>
+                            <input type="text" id="pemainNama" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">NISN (Wajib & Unik) *</label>
+                            <input type="number" id="pemainNISN" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tempat Lahir *</label>
+                            <input type="text" id="pemainTempatLahir" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tanggal Lahir *</label>
+                            <input type="date" id="pemainTglLahir" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Alamat Pemain *</label>
+                        <textarea id="pemainAlamat" rows="2" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Sekolah Saat Ini *</label>
+                            <input type="text" id="pemainSekolah" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">NPSN Sekolah *</label>
+                            <input type="text" id="pemainNPSN" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">No. HP Pemain / Orang Tua *</label>
+                            <input type="tel" id="pemainHp" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Posisi Pemain *</label>
+                            <select id="pemainPosisi" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white">
+                                <option value="Kiper (GK)">Kiper (GK)</option>
+                                <option value="Bek Tengah (CB)">Bek Tengah (CB)</option>
+                                <option value="Bek Sayap (LB/RB)">Bek Sayap (LB/RB)</option>
+                                <option value="Gelandang (CM/DM/AM)">Gelandang (CM/DM/AM)</option>
+                                <option value="Penyerang Sayap (LW/RW)">Penyerang Sayap (LW/RW)</option>
+                                <option value="Penyerang Depan (ST)">Penyerang Depan (ST)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Kaki Dominan *</label>
+                            <select id="pemainKaki" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white">
+                                <option value="Kanan">Kanan</option>
+                                <option value="Kiri">Kiri</option>
+                                <option value="Kedua Kaki (Ambidextrous)">Kedua Kaki</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nomor Punggung (Unik Dalam Tim) *</label>
+                            <input type="number" id="pemainNoPunggung" min="1" max="99" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nama Orang Tua *</label>
+                            <input type="text" id="pemainOrangTua" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">No. HP Orang Tua *</label>
+                            <input type="tel" id="pemainHpOrtu" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                        </div>
+                    </div>
+
+                    <!-- Upload Berkas -->
+                    <div class="border-t pt-4 space-y-4">
+                        <h4 class="font-bold text-slate-800 text-sm uppercase">Lampiran Berkas (Otomatis Tersimpan di Google Drive per Folder)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <label class="block font-bold mb-1">Foto Pemain (PNG/JPG) *</label>
+                                <input type="file" id="fileFoto" accept="image/png,image/jpeg,image/webp" required class="w-full border rounded p-2 bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block font-bold mb-1">Akte Kelahiran (Gambar/PDF) *</label>
+                                <input type="file" id="fileAkte" accept="image/png,image/jpeg,image/webp,.pdf,application/pdf" required class="w-full border rounded p-2 bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block font-bold mb-1">Kartu Keluarga (KK) (Gambar/PDF) *</label>
+                                <input type="file" id="fileKK" accept="image/png,image/jpeg,image/webp,.pdf,application/pdf" required class="w-full border rounded p-2 bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block font-bold mb-1">Ijazah Terakhir (Gambar/PDF) *</label>
+                                <input type="file" id="fileIjazah" accept="image/png,image/jpeg,image/webp,.pdf,application/pdf" required class="w-full border rounded p-2 bg-slate-50">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block font-bold mb-1">Ijazah Rapor / NISN (Gambar/PDF) *</label>
+                                <input type="file" id="fileRapor" accept="image/png,image/jpeg,image/webp,.pdf,application/pdf" required class="w-full border rounded p-2 bg-slate-50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                        Kirim Pendaftaran Pemain
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 7: LOGIN TIM ================= -->
+        <section id="page-login-tim" class="page-content hidden max-w-md mx-auto px-4 py-16">
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+                <div class="text-center mb-6">
+                    <i class="fa-solid fa-users-gear text-4xl text-blue-600 mb-2"></i>
+                    <h2 class="text-2xl font-bold">Login Dashboard Tim</h2>
+                    <p class="text-xs text-slate-500">Masuk untuk melihat DSP & strategi bertanding</p>
+                </div>
+                <form onsubmit="handleLoginTim(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Username Tim</label>
+                        <input type="text" id="loginTimUser" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Password</label>
+                        <input type="password" id="loginTimPass" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700">Masuk Dashboard Tim</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 8: DASHBOARD TIM (LOGIN USER) ================= -->
+        <section id="page-dashboard-tim" class="page-content hidden max-w-7xl mx-auto px-4 py-10">
+            <div class="bg-white rounded-2xl p-6 shadow-md border mb-6 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 id="dashTimNama" class="text-3xl font-extrabold text-slate-900">Nama Tim</h2>
+                    <p class="text-sm text-slate-500">Kategori: <span id="dashTimKategori" class="font-bold text-blue-600 mr-2">U-12</span> | Status: <span id="dashTimStatus" class="font-bold px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">TERVERIFIKASI</span></p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="printDSP()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow"><i class="fa-solid fa-print mr-1"></i> Cetak DSP (Daftar Susunan Pemain)</button>
+                    <button onclick="logoutTim()" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold">Keluar</button>
+                </div>
+            </div>
+
+            <!-- Roster & Formasi -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Roster List -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
+                    <h3 class="text-lg font-bold mb-4 border-b pb-2 text-slate-800">Daftar Pemain Terdaftar</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-100 border-b">
+                                    <th class="p-3 font-bold">No</th>
+                                    <th class="p-3 font-bold">Foto</th>
+                                    <th class="p-3 font-bold">Nama Pemain</th>
+                                    <th class="p-3 font-bold">Posisi</th>
+                                    <th class="p-3 font-bold">NISN</th>
+                                    <th class="p-3 font-bold">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashTimPlayerTable">
+                                <!-- Dynamic Player Roster -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Formasi & Strategi (Fleksibel Jumlah Pemain) -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h3 class="text-lg font-bold mb-2 border-b pb-2 text-slate-800">Papan Formasi & Strategi</h3>
+                    
+                    <div class="mb-4 space-y-3 bg-slate-50 p-3 rounded-lg border">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jumlah Pemain Bertanding (Starter)</label>
+                            <select id="dashPlayerCountSelect" onchange="renderFormationField()" class="w-full p-2 border rounded-lg text-xs bg-white font-bold text-blue-900">
+                                <option value="7">7 vs 7 (7 Pemain)</option>
+                                <option value="8">8 vs 8 (8 Pemain)</option>
+                                <option value="9">9 vs 9 (9 Pemain)</option>
+                                <option value="11" selected>11 vs 11 (11 Pemain Standard)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-700 rounded-xl p-4 text-white relative min-h-[420px] border-4 border-white shadow-inner flex flex-col justify-between overflow-hidden">
+                        <!-- Field Markings -->
+                        <div class="absolute inset-x-0 top-1/2 border-t-2 border-white/40"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-24 h-24 border-2 border-white/40 rounded-full"></div>
+                        </div>
+
+                        <div class="relative z-10 text-center font-bold text-xs bg-black/50 py-1.5 px-3 rounded-full border border-white/20 mx-auto">
+                            SKEMA STRATEGI (<span id="formationCountBadge">11</span> PEMAIN)
+                        </div>
+
+                        <!-- Dynamic Formation Slots Field -->
+                        <div id="formationSlotsContainer" class="relative z-10 my-6 grid grid-cols-3 gap-2 min-h-[250px] items-center justify-items-center">
+                            <!-- Dynamic Slots Rendered Here -->
+                        </div>
+
+                        <div class="relative z-10 text-center space-y-1">
+                            <div class="text-[11px] font-semibold bg-emerald-900/80 p-2 rounded-lg border border-emerald-500/30">
+                                Pelatih: <span id="dashPelatih" class="font-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 9: LOGIN ADMIN ================= -->
+        <section id="page-login-admin" class="page-content hidden max-w-md mx-auto px-4 py-16">
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+                <div class="text-center mb-6">
+                    <i class="fa-solid fa-user-shield text-4xl text-red-600 mb-2"></i>
+                    <h2 class="text-2xl font-bold">Portal Admin LTS Palu</h2>
+                    <p class="text-xs text-slate-500">Akses khusus panitia pelaksana</p>
+                </div>
+                <form onsubmit="handleLoginAdmin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Username Admin</label>
+                        <input type="text" id="adminUser" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Password Admin</label>
+                        <div class="relative">
+                            <input type="password" id="adminPass" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 pr-10">
+                            <button type="button" onclick="togglePasswordVis('adminPass', 'passEyeIcon')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                                <i id="passEyeIcon" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 shadow">Masuk Admin Panel</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 10: ADMIN PANEL ================= -->
+        <section id="page-admin-panel" class="page-content hidden max-w-7xl mx-auto px-4 py-10">
+            <div class="flex justify-between items-center mb-6 bg-slate-900 text-white p-6 rounded-2xl shadow-lg border-b-4 border-red-600">
+                <div>
+                    <h2 class="text-2xl font-bold">PANEL KONTROL ADMIN LTS PALU</h2>
+                    <p class="text-xs text-slate-400">Verifikasi Tim, Kategori Usia, Cetak Kartu A5 PDF, dan Scan Player</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openChangePasswordModal()" class="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-key mr-1"></i> Ubah Pass</button>
+                    <button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded text-xs font-bold">Logout</button>
+                </div>
+            </div>
+
+            <!-- Admin Tabs Navigation -->
+            <div class="flex flex-wrap border-b border-slate-200 mb-6 gap-2">
+                <button onclick="switchAdminTab('verifikasi')" class="admin-tab-btn px-4 py-2 text-sm font-bold border-b-2 border-red-600 text-red-600" id="tab-verifikasi">Verifikasi & Data Tim</button>
+                <button onclick="switchAdminTab('kategori')" class="admin-tab-btn px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700" id="tab-kategori">Pengaturan Kategori Usia & Batas Limit</button>
+                <button onclick="switchAdminTab('scan')" class="admin-tab-btn px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700" id="tab-scan">Fitur SCAN Pertandingan</button>
+                <button onclick="switchAdminTab('pengaturan')" class="admin-tab-btn px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700" id="tab-pengaturan">Pengaturan Web & Berita</button>
+            </div>
+
+            <!-- TAB 1: VERIFIKASI & REKAPAN TIM (WITH KATEGORI FILTER) -->
+            <div id="adminTab-verifikasi" class="admin-tab-content space-y-6">
+                <div class="bg-white rounded-xl p-6 shadow border">
+                    <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+                        <div class="flex items-center gap-3">
+                            <h3 class="font-bold text-lg text-slate-800">Daftar Tim Terdaftar</h3>
+                            <!-- Filter per Kategori Usia -->
+                            <select id="filterTeamKategori" onchange="renderAdminTeams()" class="px-3 py-1.5 border rounded-lg text-xs font-bold bg-slate-50 text-blue-900 border-blue-300">
+                                <option value="ALL">-- Semua Kategori Usia --</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="exportTeamsCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel Tim</button>
+                            <button onclick="exportPlayersCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel Pemain</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 border-b text-slate-700">
+                                    <th class="p-3">Logo</th>
+                                    <th class="p-3">Nama Tim</th>
+                                    <th class="p-3">Kategori Usia</th>
+                                    <th class="p-3">Pelatih</th>
+                                    <th class="p-3">Jml Pemain</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Aksi Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTeamTable">
+                                <!-- Dynamic Teams -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detail Pemain per Tim Modal/Section -->
+                <div id="adminPlayerDetailSection" class="bg-white rounded-xl p-6 shadow border hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-slate-800" id="selectedTeamTitle">Kelola Pemain Tim</h3>
+                        <div class="flex gap-2">
+                            <button onclick="cetakKartuA5Semua()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold"><i class="fa-solid fa-file-pdf mr-1"></i> Cetak Kartu A5 PDF (Semua Pemain)</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 border-b">
+                                    <th class="p-3">Foto</th>
+                                    <th class="p-3">Nama Pemain</th>
+                                    <th class="p-3">NISN</th>
+                                    <th class="p-3">No. Punggung</th>
+                                    <th class="p-3">Posisi</th>
+                                    <th class="p-3">Status Pemain</th>
+                                    <th class="p-3">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminPlayerTable">
+                                <!-- Dynamic Players -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB BARU: PENGATURAN KATEGORI USIA & BATAS LIMIT -->
+            <div id="adminTab-kategori" class="admin-tab-content hidden space-y-6">
+                <!-- Form Tambah / Edit Kategori -->
+                <div class="bg-white p-6 rounded-xl shadow border">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h3 id="formKategoriTitle" class="font-bold text-lg text-slate-800"><i class="fa-solid fa-layer-group text-red-600 mr-2"></i> Tambah / Kelola Kategori Usia</h3>
+                        <button id="cancelEditKategoriBtn" onclick="cancelEditKategori()" class="hidden text-xs bg-slate-200 text-slate-700 font-bold px-3 py-1 rounded hover:bg-slate-300">Batal Edit</button>
+                    </div>
+                    <form onsubmit="handleFormKategori(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <input type="hidden" id="editKatId" value="">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nama Kategori Usia *</label>
+                            <input type="text" id="katNama" required placeholder="Contoh: U-12 (2014-2015)" class="w-full p-2.5 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Batas Maksimal Tim *</label>
+                            <input type="number" id="katMaxTim" min="1" required placeholder="Contoh: 16" class="w-full p-2.5 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Batas Maksimal Pemain / Tim *</label>
+                            <input type="number" id="katMaxPemain" min="1" required placeholder="Contoh: 22" class="w-full p-2.5 border rounded-lg text-sm">
+                        </div>
+                        <button type="submit" id="submitKatBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition">
+                            Simpan Kategori Usia
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tabel List Kategori -->
+                <div class="bg-white p-6 rounded-xl shadow border">
+                    <h4 class="font-bold text-slate-800 mb-3 text-sm uppercase">Daftar Kategori Usia Terdaftar</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 border-b">
+                                    <th class="p-3 font-bold">Kategori Usia</th>
+                                    <th class="p-3 font-bold">Max Tim Pendaftar</th>
+                                    <th class="p-3 font-bold">Max Pemain per Tim</th>
+                                    <th class="p-3 font-bold">Tim Terdaftar</th>
+                                    <th class="p-3 font-bold">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminKategoriTable">
+                                <!-- Dynamic Kategori -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: FITUR SCAN PEMAIN PERTANDINGAN -->
+            <div id="adminTab-scan" class="admin-tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow border">
+                    <h3 class="font-bold text-lg mb-2 text-slate-800">Scan Validasi Pemain Sebelum Bertanding</h3>
+                    <p class="text-xs text-slate-500 mb-4">Pilih Tim terlebih dahulu lalu lakukan Scan QR Code ID Pemain untuk mencatat kehadiran resmi.</p>
+                    
+                    <div class="max-w-md space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1">Pilih Tim Bertanding</label>
+                            <select id="scanSelectTeam" onchange="initScanList()" class="w-full p-2.5 border rounded-lg bg-white">
+                                <option value="">-- Pilih Tim --</option>
+                            </select>
+                        </div>
+
+                        <!-- Scanner Viewport -->
+                        <div id="qr-reader" class="w-full border-2 border-dashed border-blue-400 rounded-xl overflow-hidden bg-slate-900 text-white min-h-[250px] flex items-center justify-center"></div>
+                        <div class="flex gap-2">
+                            <button onclick="startScanner()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs">Mulai Kamera Scan</button>
+                            <button onclick="stopScanner()" class="bg-slate-600 text-white px-4 py-2 rounded-lg font-bold text-xs">Hentikan Kamera</button>
+                        </div>
+                    </div>
+
+                    <!-- Rekapan Scan Tim -->
+                    <div class="mt-8 border-t pt-6">
+                        <h4 class="font-bold text-md text-slate-800 mb-3">Rekapan Player Sah (Ter-Scan) Bertanding</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 border-b">
+                                        <th class="p-3">Nama Pemain</th>
+                                        <th class="p-3">No. Punggung</th>
+                                        <th class="p-3">NISN</th>
+                                        <th class="p-3">Waktu Scan</th>
+                                        <th class="p-3">Status Match</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scanHistoryTable">
+                                    <!-- Scan logs -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: PENGATURAN BERANDA & GALERI -->
+            <div id="adminTab-pengaturan" class="admin-tab-content hidden space-y-6">
+                <!-- Narasi Beranda -->
+                <div class="bg-white p-6 rounded-xl shadow border space-y-3">
+                    <h3 class="font-bold text-lg text-slate-800">Pengaturan Narasi Hero Beranda</h3>
+                    <textarea id="editHeroNarrative" rows="3" class="w-full p-3 border rounded-lg text-sm"></textarea>
+                    <button onclick="saveHeroNarrative()" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg text-sm">Simpan Narasi Hero</button>
+                </div>
+
+                <!-- Narasi / Informasi Footer -->
+                <div class="bg-white p-6 rounded-xl shadow border space-y-3">
+                    <h3 class="font-bold text-lg text-slate-800">Pengaturan Narasi / Informasi Footer</h3>
+                    <textarea id="editFooterNarrative" rows="3" class="w-full p-3 border rounded-lg text-sm"></textarea>
+                    <button onclick="saveFooterNarrative()" class="bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-sm">Simpan Narasi Footer</button>
+                </div>
+
+                <!-- Pengaturan Kontak & Sekretariat Footer -->
+                <div class="bg-white p-6 rounded-xl shadow border space-y-4">
+                    <h3 class="font-bold text-lg text-slate-800 border-b pb-2">Pengaturan Sekretariat & Kontak Footer</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nama Sekretaris LTS Palu</label>
+                            <input type="text" id="editSekretarisNama" class="w-full p-2.5 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nomor Telepon / WhatsApp</label>
+                            <input type="text" id="editSekretariatPhone" class="w-full p-2.5 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Alamat Sekretariat</label>
+                            <input type="text" id="editSekretariatAlamat" class="w-full p-2.5 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Email Resmi Sekretariat</label>
+                            <input type="email" id="editSekretariatEmail" class="w-full p-2.5 border rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <button onclick="saveSekretariatInfo()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">
+                        Simpan Informasi Sekretariat
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- PRINT CONTAINER (Hidden in Web, visible on PDF Print) -->
+    <div id="printableArea" class="hidden">
+        <!-- Dynamic Player Cards A5 render here -->
+    </div>
+
+    <!-- MODAL EDIT PASSWORD ADMIN -->
+    <div id="modalPass" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-lg text-slate-900 border-b pb-2">Ubah Password Admin</h3>
+            <div>
+                <label class="block text-xs font-bold mb-1">Password Baru</label>
+                <input type="password" id="newAdminPass" class="w-full p-2.5 border rounded-lg">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('modalPass')" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">Batal</button>
+                <button onclick="saveNewAdminPass()" class="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-white border-t-4 border-red-600 mt-12 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-trophy text-red-500 text-2xl"></i>
+                    <span class="font-black text-xl tracking-wider">LTS PALU</span>
+                </div>
+                <p id="footerNarrativeText" class="text-xs text-slate-400 leading-relaxed">
+                    Liga Top Skor Zona Palu merupakan kompetisi resmi kelompok umur under-age yang berorientasi pada pengembangan kualitas karakter dan keterampilan sepakbola anak muda Sulawesi Tengah.
+                </p>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm uppercase text-red-400 mb-3">Sekretariat LTS Palu</h4>
+                <p class="text-xs text-slate-300 mb-1.5"><i class="fa-solid fa-user-tie text-blue-400 mr-2"></i> Sekretaris: <span id="footerSekretarisNama" class="font-bold text-white">Ahmad Fauzi, S.Pd</span></p>
+                <p class="text-xs text-slate-300 mb-1.5"><i class="fa-solid fa-location-dot text-red-500 mr-2"></i> <span id="footerSekretariatAlamat">Jl. Gajah Mada No. 45, Kota Palu, Sulawesi Tengah</span></p>
+                <p class="text-xs text-slate-300 mb-1.5"><i class="fa-solid fa-envelope text-yellow-400 mr-2"></i> <span id="footerSekretariatEmail">sekretariat@ltspalu.id</span></p>
+                <p class="text-xs text-slate-300"><i class="fa-solid fa-phone text-emerald-400 mr-2"></i> <span id="footerSekretariatPhone">+62 812-4567-8901</span></p>
+            </div>
+        </div>
+        <div class="text-center text-xs text-slate-500 mt-8 pt-4 border-t border-slate-800">
+            &copy; 2026 Liga Top Skor Zona Palu. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ================= APP INITIAL STATE =================
+        const DEFAULT_LOGO = "https://placehold.co/150x150/1d4ed8/ffffff?text=LTS+PALU";
+        
+        let state = {
+            adminPass: "admin123",
+            heroNarrative: "Wadah resmi kompetisi sepak bola bereputasi nasional di Kota Palu, Sulawesi Tengah. Mencetak talenta muda unggul dan berprestasi menuju pentas profesional.",
+            footerNarrative: "Liga Top Skor Zona Palu merupakan kompetisi resmi kelompok umur under-age yang berorientasi pada pengembangan kualitas karakter dan keterampilan sepakbola anak muda Sulawesi Tengah.",
+            sekretariat: {
+                nama: "Ahmad Fauzi, S.Pd",
+                alamat: "Jl. Gajah Mada No. 45, Kota Palu, Sulawesi Tengah",
+                email: "sekretariat@ltspalu.id",
+                phone: "+62 812-4567-8901"
+            },
+            categories: [
+                { id: "KAT-10", nama: "U-10 (2016-2017)", maxTeams: 16, maxPlayers: 18 },
+                { id: "KAT-12", nama: "U-12 (2014-2015)", maxTeams: 16, maxPlayers: 20 },
+                { id: "KAT-14", nama: "U-14 (2012-2013)", maxTeams: 16, maxPlayers: 22 },
+                { id: "KAT-16", nama: "U-16 (2010-2011)", maxTeams: 16, maxPlayers: 25 }
+            ],
+            teams: [
+                {
+                    id: "TIM-001",
+                    nama: "Palu Putra FC",
+                    kategori: "U-12 (2014-2015)",
+                    logo: "https://placehold.co/150x150/1d4ed8/ffffff?text=Palu+Putra",
+                    pelatih: "Coach Ahmad",
+                    asst: "Budi",
+                    medis: "Dr. Rizky",
+                    kitman: "Doni",
+                    username: "paluputra",
+                    password: "123",
+                    verified: true
+                },
+                {
+                    id: "TIM-002",
+                    nama: "Celebes FC",
+                    kategori: "U-14 (2012-2013)",
+                    logo: "https://placehold.co/150x150/dc2626/ffffff?text=Celebes",
+                    pelatih: "Coach Hendra",
+                    asst: "",
+                    medis: "",
+                    kitman: "",
+                    username: "celebes",
+                    password: "123",
+                    verified: false
+                }
+            ],
+            players: [
+                {
+                    id: "PL-001",
+                    teamId: "TIM-001",
+                    teamName: "Palu Putra FC",
+                    nama: "Muhammad Farel",
+                    nisn: "0081234567",
+                    tempatLahir: "Palu",
+                    tglLahir: "2010-05-14",
+                    alamat: "Jl. Soekarno Hatta No 12, Palu",
+                    sekolah: "SMPN 1 Palu",
+                    npsn: "40201010",
+                    hp: "08123456789",
+                    posisi: "Penyerang Depan (ST)",
+                    kaki: "Kanan",
+                    noPunggung: "9",
+                    orangTua: "Hasan",
+                    hpOrtu: "08129876543",
+                    foto: "https://placehold.co/200x250/0f172a/ffffff?text=Foto+Farel",
+                    verified: true
+                }
+            ],
+            news: [
+                {
+                    id: 1,
+                    judul: "Pembukaan Resmi Liga Top Skor Zona Palu Musim 2026",
+                    isi: "Kompetisi sepak bola usia muda terbesar di Kota Palu resmi bergulir akhir pekan ini di Stadion Gawalise...",
+                    foto: "https://placehold.co/600x350/0f172a/3b82f6?text=Pembukaan+LTS+Palu"
+                }
+            ],
+            gallery: [
+                { id: 1, caption: "Laga Pembukaan LTS Palu", url: "https://placehold.co/400x300/1d4ed8/ffffff?text=Match+LTS" },
+                { id: 2, caption: "Selebrasi Gol Tim", url: "https://placehold.co/400x300/dc2626/ffffff?text=Selebrasi+Gol" }
+            ],
+            scannedList: [],
+            currentLoggedInTeam: null
+        };
+
+        let html5QrcodeScanner = null;
+
+        // Initialize on Window Load
+        window.onload = async function() {
+            renderHeroNarrative();
+            renderFooterNarrative();
+            renderSekretariatInfo();
+            renderNews();
+            renderGallery();
+            populateKategoriDropdowns();
+            populateTeamSelect();
+            renderAdminTeams();
+            renderAdminKategoriTable();
+            renderAdminScanSelect();
+            await loadPublicData();
+        };
+
+        // Navigation Switcher
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`page-${pageId}`);
+            if (target) target.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function showAlert(msg, isSuccess = true) {
+            const box = document.getElementById('alertBox');
+            const content = document.getElementById('alertContent');
+            const message = document.getElementById('alertMessage');
+            
+            message.textContent = msg;
+            content.className = `p-4 rounded-xl text-white font-medium flex justify-between items-center shadow-lg ${isSuccess ? 'bg-emerald-600' : 'bg-red-600'}`;
+            box.classList.remove('hidden');
+            setTimeout(() => { hideAlert(); }, 5000);
+        }
+
+        function hideAlert() {
+            document.getElementById('alertBox').classList.add('hidden');
+        }
+
+        function togglePasswordVis(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.className = "fa-solid fa-eye-slash";
+            } else {
+                input.type = "password";
+                icon.className = "fa-solid fa-eye";
+            }
+        }
+
+        // ================= POPULATE KATEGORI USIA =================
+        function populateKategoriDropdowns() {
+            // Dropdown di Form Tim
+            const timKatSelect = document.getElementById('timKategoriSelect');
+            if (timKatSelect) {
+                timKatSelect.innerHTML = '<option value="">-- Pilih Kategori Usia --</option>';
+                state.categories.forEach(k => {
+                    timKatSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(k.nama)}">${escapeHtml(k.nama)}</option>`);
+                });
+            }
+
+            // Dropdown Filter di Admin Rekapan Tim
+            const filterKatSelect = document.getElementById('filterTeamKategori');
+            if (filterKatSelect) {
+                filterKatSelect.innerHTML = '<option value="ALL">-- Semua Kategori Usia --</option>';
+                state.categories.forEach(k => {
+                    filterKatSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(k.nama)}">${escapeHtml(k.nama)}</option>`);
+                });
+            }
+        }
+
+        // ================= HERO & NEWS & GALLERY =================
+        function renderHeroNarrative() {
+            const el = document.getElementById('heroNarrative');
+            const input = document.getElementById('editHeroNarrative');
+            if (el) el.textContent = state.heroNarrative;
+            if (input) input.value = state.heroNarrative;
+        }
+
+        async function saveHeroNarrative() {
+            const input = document.getElementById('editHeroNarrative');
+            if (!input) return;
+            state.heroNarrative = input.value;
+            renderHeroNarrative();
+            if (API_ENABLED) {
+                try { await adminApiAction('saveSettings', { heroNarrative: state.heroNarrative }); }
+                catch (err) { return showAlert(`Gagal menyimpan ke Google Sheets: ${err.message}`, false); }
+            }
+            showAlert("Narasi Beranda Berhasil Disimpan dan Diperbarui!", true);
+        }
+
+        function renderFooterNarrative() {
+            const el = document.getElementById('footerNarrativeText');
+            const input = document.getElementById('editFooterNarrative');
+            if (el) el.textContent = state.footerNarrative;
+            if (input) input.value = state.footerNarrative;
+        }
+
+        async function saveFooterNarrative() {
+            const input = document.getElementById('editFooterNarrative');
+            if (!input) return;
+            state.footerNarrative = input.value;
+            renderFooterNarrative();
+            if (API_ENABLED) {
+                try { await adminApiAction('saveSettings', { footerNarrative: state.footerNarrative }); }
+                catch (err) { return showAlert(`Gagal menyimpan ke Google Sheets: ${err.message}`, false); }
+            }
+            showAlert("Informasi Footer Berhasil Disimpan dan Diperbarui!", true);
+        }
+
+        function renderSekretariatInfo() {
+            const namaEl = document.getElementById('footerSekretarisNama');
+            const alamatEl = document.getElementById('footerSekretariatAlamat');
+            const emailEl = document.getElementById('footerSekretariatEmail');
+            const phoneEl = document.getElementById('footerSekretariatPhone');
+
+            const editNama = document.getElementById('editSekretarisNama');
+            const editAlamat = document.getElementById('editSekretariatAlamat');
+            const editEmail = document.getElementById('editSekretariatEmail');
+            const editPhone = document.getElementById('editSekretariatPhone');
+
+            if (namaEl) namaEl.textContent = state.sekretariat.nama;
+            if (alamatEl) alamatEl.textContent = state.sekretariat.alamat;
+            if (emailEl) emailEl.textContent = state.sekretariat.email;
+            if (phoneEl) phoneEl.textContent = state.sekretariat.phone;
+
+            if (editNama) editNama.value = state.sekretariat.nama;
+            if (editAlamat) editAlamat.value = state.sekretariat.alamat;
+            if (editEmail) editEmail.value = state.sekretariat.email;
+            if (editPhone) editPhone.value = state.sekretariat.phone;
+        }
+
+        async function saveSekretariatInfo() {
+            state.sekretariat.nama = document.getElementById('editSekretarisNama').value.trim();
+            state.sekretariat.alamat = document.getElementById('editSekretariatAlamat').value.trim();
+            state.sekretariat.email = document.getElementById('editSekretariatEmail').value.trim();
+            state.sekretariat.phone = document.getElementById('editSekretariatPhone').value.trim();
+            renderSekretariatInfo();
+            if (API_ENABLED) {
+                try { await adminApiAction('saveSettings', { sekretariat: state.sekretariat }); }
+                catch (err) { return showAlert(`Gagal menyimpan ke Google Sheets: ${err.message}`, false); }
+            }
+            showAlert("Informasi Sekretariat & Kontak Footer Berhasil Diperbarui!", true);
+        }
+
+        function renderNews() {
+            const homeGrid = document.getElementById('homeNewsGrid');
+            const fullGrid = document.getElementById('newsListGrid');
+
+            if (homeGrid) homeGrid.innerHTML = '';
+            if (fullGrid) fullGrid.innerHTML = '';
+
+            state.news.forEach(n => {
+                const cardHTML = `
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100 flex flex-col">
+                        <img src="${escapeHtml(n.foto)}" class="w-full h-48 object-cover" alt="">
+                        <div class="p-5 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-900 mb-2">${escapeHtml(n.judul)}</h3>
+                                <p class="text-slate-600 text-xs line-clamp-3">${escapeHtml(n.isi)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                if (homeGrid) homeGrid.insertAdjacentHTML('beforeend', cardHTML);
+                if (fullGrid) fullGrid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            state.gallery.forEach(g => {
+                grid.insertAdjacentHTML('beforeend', `
+                    <div class="relative group rounded-xl overflow-hidden shadow-md">
+                        <img src="${escapeHtml(g.url)}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-300" alt="">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+                            <span class="text-white font-bold text-sm">${escapeHtml(g.caption)}</span>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        // ================= PENDAFTARAN TIM & PEMAIN =================
+        function populateTeamSelect() {
+            const select = document.getElementById('pemainTimSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Pilih Tim --</option>';
+
+            state.teams.filter(t => t.verified).forEach(t => {
+                select.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(t.id)}">${escapeHtml(t.nama)} [${escapeHtml(t.kategori || 'U-12')}]</option>`);
+            });
+        }
+
+        async function handleFormTim(e) {
+            e.preventDefault();
+            const nama = document.getElementById('timNama').value.trim();
+            const kategori = document.getElementById('timKategoriSelect').value;
+            const pelatih = document.getElementById('timPelatih').value.trim();
+            const asst = document.getElementById('timAsst').value.trim();
+            const medis = document.getElementById('timMedis').value.trim();
+            const kitman = document.getElementById('timKitman').value.trim();
+            const username = document.getElementById('timUsername').value.trim();
+            const password = document.getElementById('timPassword').value;
+            const logoFile = document.getElementById('timLogo').files[0];
+            const katConfig = state.categories.find(k => k.nama === kategori);
+            if (katConfig && state.teams.filter(t => t.kategori === kategori).length >= katConfig.maxTeams) {
+                return showAlert(`Pendaftaran Gagal: Kuota Tim untuk kategori ${kategori} sudah Penuh! (Max ${katConfig.maxTeams} Tim)`, false);
+            }
+            if (state.teams.some(t => t.username && t.username.toLowerCase() === username.toLowerCase())) {
+                return showAlert("Username sudah digunakan oleh tim lain!", false);
+            }
+            if (API_ENABLED) {
+                try {
+                    const logo = await fileToPayload(logoFile, 4);
+                    const result = await apiRequest('/api/public/register-team', { method: 'POST', body: {
+                        nama, kategori, pelatih, asst, medis, kitman, username, password, logo
+                    }});
+                    if (result.team) state.teams.push(result.team);
+                } catch (err) {
+                    return showAlert(`Pendaftaran tim gagal: ${err.message}`, false);
+                }
+            } else {
+                const logoUrl = logoFile ? URL.createObjectURL(logoFile) : DEFAULT_LOGO;
+                state.teams.push({
+                    id: "TIM-" + Date.now(), nama, kategori, logo: logoUrl, pelatih, asst, medis, kitman,
+                    username, password, verified: false
+                });
+            }
+            document.getElementById('formTim').reset();
+            populateTeamSelect();
+            renderAdminTeams();
+            renderAdminKategoriTable();
+            showAlert(`Pendaftaran Tim ${nama} (${kategori}) Berhasil! Silakan tunggu verifikasi admin untuk login.`, true);
+        }
+
+        async function handleFormPemain(e) {
+            e.preventDefault();
+            const teamId = document.getElementById('pemainTimSelect').value;
+            const nama = document.getElementById('pemainNama').value.trim();
+            const nisn = document.getElementById('pemainNISN').value.trim();
+            const tempatLahir = document.getElementById('pemainTempatLahir').value.trim();
+            const tglLahir = document.getElementById('pemainTglLahir').value;
+            const alamat = document.getElementById('pemainAlamat').value.trim();
+            const sekolah = document.getElementById('pemainSekolah').value.trim();
+            const npsn = document.getElementById('pemainNPSN').value.trim();
+            const hp = document.getElementById('pemainHp').value.trim();
+            const posisi = document.getElementById('pemainPosisi').value;
+            const kaki = document.getElementById('pemainKaki').value;
+            const noPunggung = document.getElementById('pemainNoPunggung').value.trim();
+            const orangTua = document.getElementById('pemainOrangTua').value.trim();
+            const hpOrtu = document.getElementById('pemainHpOrtu').value.trim();
+            const team = state.teams.find(t => t.id === teamId);
+            if (!team) return showAlert("Tim tidak ditemukan. Muat ulang halaman dan pilih tim yang terverifikasi.", false);
+            const katConfig = state.categories.find(k => k.nama === team.kategori);
+            if (katConfig && state.players.filter(p => p.teamId === teamId).length >= katConfig.maxPlayers) {
+                return showAlert(`Pendaftaran Gagal: Tim ${team.nama} sudah mencapai batas maksimal ${katConfig.maxPlayers} pemain untuk kategori ${team.kategori}!`, false);
+            }
+            if (state.players.some(p => p.nisn === nisn)) return showAlert(`NISN ${nisn} sudah terdaftar!`, false);
+            if (state.players.some(p => p.teamId === teamId && p.noPunggung === noPunggung)) return showAlert(`Nomor punggung #${noPunggung} sudah digunakan oleh pemain lain dalam tim ini!`, false);
+
+            if (API_ENABLED) {
+                try {
+                    const fileMap = {
+                        foto: await fileToPayload(document.getElementById('fileFoto').files[0], 3),
+                        akte: await fileToPayload(document.getElementById('fileAkte').files[0], 3),
+                        kk: await fileToPayload(document.getElementById('fileKK').files[0], 3),
+                        ijazah: await fileToPayload(document.getElementById('fileIjazah').files[0], 3),
+                        rapor: await fileToPayload(document.getElementById('fileRapor').files[0], 3)
+                    };
+                    await apiRequest('/api/public/register-player', { method: 'POST', body: {
+                        teamId, nama, nisn, tempatLahir, tglLahir, alamat, sekolah, npsn, hp, posisi, kaki,
+                        noPunggung, orangTua, hpOrtu, files: fileMap
+                    }});
+                } catch (err) {
+                    return showAlert(`Pendaftaran pemain gagal: ${err.message}`, false);
+                }
+            } else {
+                const fotoFile = document.getElementById('fileFoto').files[0];
+                state.players.push({
+                    id: "PL-" + Date.now(), teamId, teamName: team.nama, nama, nisn, tempatLahir, tglLahir,
+                    alamat, sekolah, npsn, hp, posisi, kaki, noPunggung, orangTua, hpOrtu,
+                    foto: fotoFile ? URL.createObjectURL(fotoFile) : "https://placehold.co/200x250/0f172a/ffffff?text=Foto+Pemain",
+                    verified: false
+                });
+            }
+            document.getElementById('formPemain').reset();
+            showAlert(`Pendaftaran Pemain ${nama} Berhasil Disimpan! Status: Belum Verifikasi.`, true);
+        }
+
+        // ================= CEK STATUS PEMAIN (NISN) =================
+        async function prosesCekNISN() {
+            const inputNisn = document.getElementById('inputCekNISN').value.trim();
+            const container = document.getElementById('hasilCekNISN');
+            if (!inputNisn) return showAlert("Masukkan nomor NISN!", false);
+            let player = null;
+            if (API_ENABLED) {
+                try {
+                    const result = await apiRequest('/api/public/check-player', { method: 'POST', body: { nisn: inputNisn } });
+                    player = result.player || null;
+                } catch (err) { return showAlert(`Tidak dapat memeriksa NISN: ${err.message}`, false); }
+            } else {
+                player = state.players.find(p => p.nisn === inputNisn) || null;
+            }
+            container.classList.remove('hidden');
+            if (player) {
+                container.innerHTML = `
+                    <div class="flex items-center gap-4 border-b pb-4">
+                        <img src="${player.foto || DEFAULT_PLAYER_PHOTO}" class="w-16 h-20 object-cover rounded-lg shadow border">
+                        <div><h3 class="font-bold text-xl text-slate-900">${escapeHtml(player.nama)}</h3>
+                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-bold mt-1">${escapeHtml(player.teamName)}</span></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs pt-2">
+                        <div><span class="text-slate-500 block">NISN</span><span class="font-bold font-mono text-sm">${escapeHtml(player.nisn)}</span></div>
+                        <div><span class="text-slate-500 block">No. Punggung</span><span class="font-bold text-red-600 text-sm">#${escapeHtml(player.noPunggung)}</span></div>
+                        <div><span class="text-slate-500 block">Posisi</span><span class="font-semibold">${escapeHtml(player.posisi)}</span></div>
+                        <div><span class="text-slate-500 block">Status Verifikasi</span><span class="font-bold ${player.verified ? 'text-green-600' : 'text-amber-600'}">${player.verified ? 'VERIFIKASI' : 'BELUM VERIFIKASI'}</span></div>
+                    </div>`;
+            } else {
+                container.innerHTML = `<div class="text-center py-4 text-red-600 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i><p>Pemain dengan NISN "${escapeHtml(inputNisn)}" Tidak Ditemukan!</p></div>`;
+            }
+        }
+
+        // ================= LOGIN & DASHBOARD TIM =================
+        async function handleLoginTim(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginTimUser').value.trim();
+            const p = document.getElementById('loginTimPass').value;
+            if (API_ENABLED) {
+                try {
+                    const login = await apiRequest('/api/auth/team', { method: 'POST', body: { username: u, password: p } });
+                    teamAuthToken = login.token;
+                    const data = await apiRequest('/api/team/bootstrap', { token: teamAuthToken });
+                    state.currentLoggedInTeam = data.team;
+                    state.players = data.players || [];
+                    await hydratePrivatePhotos(state.players, teamAuthToken);
+                    renderDashTim();
+                    switchPage('dashboard-tim');
+                    return showAlert(`Selamat datang di Dashboard Tim ${state.currentLoggedInTeam.nama}`, true);
+                } catch (err) {
+                    teamAuthToken = null;
+                    return showAlert(`Login Gagal: ${err.message}`, false);
+                }
+            }
+            const team = state.teams.find(t => t.username === u && t.password === p);
+            if (!team) return showAlert("Login Gagal: Username atau Password Tim salah!", false);
+            if (!team.verified) return showAlert("Login Gagal: Tim Belum Di Verifikasi Admin! Status masih Belum Verifikasi.", false);
+            state.currentLoggedInTeam = team;
+            renderDashTim();
+            switchPage('dashboard-tim');
+            showAlert(`Selamat datang di Dashboard Tim ${team.nama}`, true);
+        }
+
+        function renderDashTim() {
+            const team = state.currentLoggedInTeam;
+            if(!team) return;
+
+            document.getElementById('dashTimNama').textContent = team.nama;
+            document.getElementById('dashTimKategori').textContent = team.kategori || 'U-12';
+            document.getElementById('dashPelatih').textContent = team.pelatih;
+
+            const table = document.getElementById('dashTimPlayerTable');
+            table.innerHTML = '';
+
+            const teamPlayers = state.players.filter(p => p.teamId === team.id);
+            teamPlayers.forEach((p, index) => {
+                table.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-bold">${index + 1}</td>
+                        <td class="p-3"><img src="${escapeHtml(p.foto || DEFAULT_PLAYER_PHOTO)}" class="w-8 h-10 object-cover rounded" alt=""></td>
+                        <td class="p-3 font-semibold">${escapeHtml(p.nama)} <br><span class="text-xs text-slate-400">No. ${escapeHtml(p.noPunggung)}</span></td>
+                        <td class="p-3 text-xs">${escapeHtml(p.posisi)}</td>
+                        <td class="p-3 font-mono text-xs">${escapeHtml(p.nisn)}</td>
+                        <td class="p-3"><span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-bold">Sah</span></td>
+                    </tr>
+                `);
+            });
+
+            renderFormationField();
+        }
+
+        function renderFormationField() {
+            const team = state.currentLoggedInTeam;
+            if(!team) return;
+
+            const countSelect = document.getElementById('dashPlayerCountSelect');
+            const totalStarter = parseInt(countSelect ? countSelect.value : 11);
+            document.getElementById('formationCountBadge').textContent = totalStarter;
+
+            const container = document.getElementById('formationSlotsContainer');
+            container.innerHTML = '';
+
+            const teamPlayers = state.players.filter(p => p.teamId === team.id);
+
+            for (let i = 1; i <= totalStarter; i++) {
+                let optionsHTML = `<option value="">-- Slot ${i} --</option>`;
+                teamPlayers.forEach(p => {
+                    optionsHTML += `<option value="${escapeHtml(p.id)}">#${escapeHtml(p.noPunggung)} - ${escapeHtml(p.nama)}</option>`;
+                });
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="bg-slate-900/80 border border-emerald-400/40 p-2 rounded-xl text-center backdrop-blur-sm w-full max-w-[130px] shadow-lg">
+                        <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-300 block mb-1">Starter ${i}</span>
+                        <select class="w-full text-[10px] bg-slate-800 text-white rounded p-1 border border-slate-600 focus:outline-none">
+                            ${optionsHTML}
+                        </select>
+                    </div>
+                `);
+            }
+        }
+
+        function printDSP() {
+            window.print();
+        }
+
+        function logoutTim() {
+            state.currentLoggedInTeam = null;
+            teamAuthToken = null;
+            state.players = API_ENABLED ? [] : state.players;
+            switchPage('home');
+        }
+
+        // ================= ADMIN PANEL: KATEGORI USIA MANAGEMENT =================
+        async function handleFormKategori(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editKatId').value;
+            const nama = document.getElementById('katNama').value.trim();
+            const maxTeams = parseInt(document.getElementById('katMaxTim').value, 10);
+            const maxPlayers = parseInt(document.getElementById('katMaxPemain').value, 10);
+            if (state.categories.some(k => k.nama.toLowerCase() === nama.toLowerCase() && k.id !== editId)) {
+                return showAlert(`Kategori ${nama} sudah ada!`, false);
+            }
+            const payload = { id: editId || `KAT-${Date.now()}`, nama, maxTeams, maxPlayers };
+            if (API_ENABLED) {
+                try {
+                    const result = await adminApiAction('saveCategory', payload);
+                    if (result.categories) state.categories = result.categories;
+                    if (result.teams) state.teams = result.teams;
+                } catch (err) { return showAlert(`Gagal menyimpan kategori: ${err.message}`, false); }
+            } else if (editId) {
+                const kat = state.categories.find(k => k.id === editId);
+                if (kat) {
+                    const oldNama = kat.nama;
+                    Object.assign(kat, payload);
+                    state.teams.forEach(t => { if (t.kategori === oldNama) t.kategori = nama; });
+                }
+            } else {
+                state.categories.push(payload);
+            }
+            cancelEditKategori();
+            populateKategoriDropdowns();
+            renderAdminKategoriTable();
+            renderAdminTeams();
+            populateTeamSelect();
+            showAlert(`Kategori Usia ${nama} Berhasil ${editId ? 'Diperbarui' : 'Ditambahkan'}!`, true);
+        }
+
+        function editKategori(katId) {
+            const kat = state.categories.find(k => k.id === katId);
+            if (!kat) return;
+
+            document.getElementById('editKatId').value = kat.id;
+            document.getElementById('katNama').value = kat.nama;
+            document.getElementById('katMaxTim').value = kat.maxTeams;
+            document.getElementById('katMaxPemain').value = kat.maxPlayers;
+
+            document.getElementById('formKategoriTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i> Edit Kategori Usia: ${kat.nama}`;
+            document.getElementById('submitKatBtn').textContent = "Update Kategori Usia";
+            document.getElementById('submitKatBtn').className = "bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition";
+            document.getElementById('cancelEditKategoriBtn').classList.remove('hidden');
+
+            window.scrollTo({ top: document.getElementById('adminTab-kategori').offsetTop, behavior: 'smooth' });
+        }
+
+        function cancelEditKategori() {
+            document.getElementById('editKatId').value = '';
+            document.getElementById('katNama').value = '';
+            document.getElementById('katMaxTim').value = '';
+            document.getElementById('katMaxPemain').value = '';
+
+            document.getElementById('formKategoriTitle').innerHTML = `<i class="fa-solid fa-layer-group text-red-600 mr-2"></i> Tambah / Kelola Kategori Usia`;
+            document.getElementById('submitKatBtn').textContent = "Simpan Kategori Usia";
+            document.getElementById('submitKatBtn').className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition";
+            document.getElementById('cancelEditKategoriBtn').classList.add('hidden');
+        }
+
+        function renderAdminKategoriTable() {
+            const table = document.getElementById('adminKategoriTable');
+            if (!table) return;
+            table.innerHTML = '';
+
+            state.categories.forEach(k => {
+                const registeredTeamsCount = state.teams.filter(t => t.kategori === k.nama).length;
+                table.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-bold text-slate-800">${k.nama}</td>
+                        <td class="p-3 font-semibold text-blue-600">${k.maxTeams} Tim</td>
+                        <td class="p-3 font-semibold text-red-600">${k.maxPlayers} Pemain</td>
+                        <td class="p-3 font-bold ${registeredTeamsCount >= k.maxTeams ? 'text-amber-600' : 'text-emerald-600'}">
+                            ${registeredTeamsCount} / ${k.maxTeams} Tim ${registeredTeamsCount >= k.maxTeams ? '(FULL)' : ''}
+                        </td>
+                        <td class="p-3 space-x-1">
+                            <button onclick="editKategori('${k.id}')" class="px-2 py-1 text-xs bg-amber-500 text-white font-bold rounded hover:bg-amber-600">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button onclick="deleteKategori('${k.id}')" class="px-2 py-1 text-xs bg-red-600 text-white font-bold rounded hover:bg-red-700">
+                                <i class="fa-solid fa-trash"></i> Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        async function deleteKategori(katId) {
+            if (API_ENABLED) {
+                try { await adminApiAction('deleteCategory', { id: katId }); }
+                catch (err) { return showAlert(`Gagal menghapus kategori: ${err.message}`, false); }
+            }
+            state.categories = state.categories.filter(k => k.id !== katId);
+            populateKategoriDropdowns();
+            renderAdminKategoriTable();
+            showAlert("Kategori Usia berhasil dihapus.", true);
+        }
+
+        // ================= ADMIN PANEL & VERIFIKASI =================
+        async function handleLoginAdmin(e) {
+            e.preventDefault();
+            const u = document.getElementById('adminUser').value.trim();
+            const p = document.getElementById('adminPass').value;
+            if (API_ENABLED) {
+                try {
+                    const login = await apiRequest('/api/auth/admin', { method: 'POST', body: { username: u, password: p } });
+                    adminAuthToken = login.token;
+                    const data = await apiRequest('/api/admin/bootstrap', { token: adminAuthToken });
+                    applyAdminBootstrap(data);
+                    await hydratePrivatePhotos(state.players, adminAuthToken);
+                    switchPage('admin-panel');
+                    renderAdminTeams(); renderAdminKategoriTable(); renderAdminScanSelect();
+                    return showAlert("Login Admin Berhasil!", true);
+                } catch (err) {
+                    adminAuthToken = null;
+                    return showAlert(`Login Gagal: ${err.message}`, false);
+                }
+            }
+            if (u === "admin" && p === state.adminPass) {
+                switchPage('admin-panel'); renderAdminTeams(); renderAdminKategoriTable();
+                showAlert("Login Admin Berhasil!", true);
+            } else showAlert("Login Gagal: Username atau Password Admin salah!", false);
+        }
+
+        function logoutAdmin() {
+            adminAuthToken = null;
+            if (API_ENABLED) {
+                state.players = [];
+                state.scannedList = [];
+                state.currentLoggedInTeam = null;
+                loadPublicData();
+            }
+            switchPage('home');
+            showAlert("Berhasil keluar dari panel admin.", true);
+        }
+
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.className = "admin-tab-btn px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700");
+
+            document.getElementById(`adminTab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.className = "admin-tab-btn px-4 py-2 text-sm font-bold border-b-2 border-red-600 text-red-600";
+        }
+
+        function renderAdminTeams() {
+            const table = document.getElementById('adminTeamTable');
+            if (!table) return;
+            table.innerHTML = '';
+
+            const selectedKategoriFilter = document.getElementById('filterTeamKategori') ? document.getElementById('filterTeamKategori').value : 'ALL';
+
+            const filteredTeams = selectedKategoriFilter === 'ALL' 
+                ? state.teams 
+                : state.teams.filter(t => t.kategori === selectedKategoriFilter);
+
+            if (filteredTeams.length === 0) {
+                table.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 font-semibold">Tidak ada tim terdaftar untuk filter ini.</td></tr>`;
+                return;
+            }
+
+            filteredTeams.forEach((t, idx) => {
+                const count = state.players.filter(p => p.teamId === t.id).length;
+                table.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3"><img src="${escapeHtml(t.logo || DEFAULT_LOGO)}" class="w-10 h-10 object-contain" alt=""></td>
+                        <td class="p-3 font-bold">${escapeHtml(t.nama)} <br><span class="text-xs text-slate-400 font-normal">Username: ${escapeHtml(t.username || "-")} | Password: tersimpan aman</span></td>
+                        <td class="p-3 font-semibold text-blue-700 text-xs">${escapeHtml(t.kategori || 'U-12')}</td>
+                        <td class="p-3 text-xs">${escapeHtml(t.pelatih)}</td>
+                        <td class="p-3 font-bold text-blue-600">${count} Pemain</td>
+                        <td class="p-3">
+                            ${t.verified 
+                                ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold">Verifikasi</span>' 
+                                : '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-bold">Belum Verifikasi</span>'}
+                        </td>
+                        <td class="p-3 space-x-1">
+                            <button onclick="toggleVerifyTeam('${t.id}')" class="px-2 py-1 text-xs font-bold rounded ${t.verified ? 'bg-amber-500 text-white' : 'bg-green-600 text-white'}">
+                                ${t.verified ? 'Belum Verifikasi' : 'Verifikasi'}
+                            </button>
+                            <button onclick="resetTeamPassword('${t.id}')" class="px-2 py-1 text-xs font-bold bg-slate-700 text-white rounded" title="Reset Password"><i class="fa-solid fa-key"></i></button>
+                            <button onclick="viewTeamPlayers('${t.id}')" class="px-2 py-1 text-xs font-bold bg-blue-600 text-white rounded">Pemain</button>
+                            <button onclick="deleteTeam('${t.id}')" class="px-2 py-1 text-xs font-bold bg-red-600 text-white rounded"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        async function toggleVerifyTeam(teamId) {
+            const team = state.teams.find(t => t.id === teamId);
+            if(team) {
+                if (API_ENABLED) {
+                    try { await adminApiAction('verifyTeam', { teamId, verified: !team.verified }); }
+                    catch (err) { return showAlert(`Gagal mengubah verifikasi tim: ${err.message}`, false); }
+                }
+                team.verified = !team.verified;
+                renderAdminTeams();
+                populateTeamSelect();
+                showAlert(`Status Tim ${team.nama} diubah menjadi ${team.verified ? 'Verifikasi' : 'Belum Verifikasi'}.`, true);
+            }
+        }
+
+        async function resetTeamPassword(teamId) {
+            const team = state.teams.find(t => t.id === teamId);
+            if(team) {
+                const newPass = prompt(`Masukkan password baru untuk tim ${team.nama}:`, "");
+                if(newPass) {
+                    if (API_ENABLED) {
+                        try { await adminApiAction('resetTeamPassword', { teamId, password: newPass }); }
+                        catch (err) { return showAlert(`Gagal reset password: ${err.message}`, false); }
+                    } else team.password = newPass;
+                    renderAdminTeams();
+                    showAlert(`Password tim ${team.nama} berhasil direset!`, true);
+                }
+            }
+        }
+
+        async function deleteTeam(teamId) {
+            if (API_ENABLED) {
+                try { await adminApiAction('deleteTeam', { teamId }); }
+                catch (err) { return showAlert(`Gagal menghapus tim: ${err.message}`, false); }
+            }
+            state.teams = state.teams.filter(t => t.id !== teamId);
+            state.players = state.players.filter(p => p.teamId !== teamId);
+            renderAdminTeams();
+            renderAdminKategoriTable();
+            populateTeamSelect();
+            showAlert("Tim beserta data pemainnya berhasil dihapus.", true);
+        }
+
+        function viewTeamPlayers(teamId) {
+            const team = state.teams.find(t => t.id === teamId);
+            document.getElementById('selectedTeamTitle').textContent = `Kelola Pemain - ${team.nama} [${team.kategori || 'U-12'}]`;
+            document.getElementById('adminPlayerDetailSection').classList.remove('hidden');
+
+            const table = document.getElementById('adminPlayerTable');
+            table.innerHTML = '';
+
+            const teamPlayers = state.players.filter(p => p.teamId === teamId);
+            teamPlayers.forEach(p => {
+                table.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3"><img src="${escapeHtml(p.foto || DEFAULT_PLAYER_PHOTO)}" class="w-8 h-10 object-cover rounded" alt=""></td>
+                        <td class="p-3 font-bold">${escapeHtml(p.nama)}</td>
+                        <td class="p-3 font-mono text-xs">${escapeHtml(p.nisn)}</td>
+                        <td class="p-3 font-bold text-red-600">#${escapeHtml(p.noPunggung)}</td>
+                        <td class="p-3 text-xs">${escapeHtml(p.posisi)}</td>
+                        <td class="p-3">
+                            ${p.verified 
+                                ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-bold">Verifikasi</span>' 
+                                : '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded font-bold">Belum Verifikasi</span>'}
+                        </td>
+                        <td class="p-3 space-x-1">
+                            <button onclick="toggleVerifyPlayer('${p.id}', '${teamId}')" class="px-2 py-1 text-xs rounded font-bold ${p.verified ? 'bg-amber-500 text-white' : 'bg-green-600 text-white'}">
+                                ${p.verified ? 'Belum Verifikasi' : 'Verifikasi'}
+                            </button>
+                            <button onclick="cetakKartuA5PerOrang('${p.id}')" class="px-2 py-1 text-xs bg-blue-600 text-white rounded font-bold"><i class="fa-solid fa-print"></i> A5</button>
+                            <button onclick="deletePlayer('${p.id}', '${teamId}')" class="px-2 py-1 text-xs bg-red-600 text-white rounded font-bold"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        async function toggleVerifyPlayer(playerId, teamId) {
+            const player = state.players.find(p => p.id === playerId);
+            if(player) {
+                if (API_ENABLED) {
+                    try { await adminApiAction('verifyPlayer', { playerId, verified: !player.verified }); }
+                    catch (err) { return showAlert(`Gagal mengubah verifikasi pemain: ${err.message}`, false); }
+                }
+                player.verified = !player.verified;
+                viewTeamPlayers(teamId);
+                showAlert(`Status Pemain ${player.nama} diperbarui menjadi ${player.verified ? 'Verifikasi' : 'Belum Verifikasi'}.`, true);
+            }
+        }
+
+        async function deletePlayer(playerId, teamId) {
+            if (API_ENABLED) {
+                try { await adminApiAction('deletePlayer', { playerId }); }
+                catch (err) { return showAlert(`Gagal menghapus pemain: ${err.message}`, false); }
+            }
+            state.players = state.players.filter(p => p.id !== playerId);
+            viewTeamPlayers(teamId);
+            renderAdminTeams();
+            showAlert("Data Pemain berhasil dihapus.", true);
+        }
+
+        // ================= EXPORT EXCEL (CSV) =================
+        function exportTeamsCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,ID,Nama Tim,Kategori Usia,Pelatih,Asst Pelatih,Medis,Kitman,Username,Status Verifikasi\n";
+            state.teams.forEach(t => {
+                csvContent += `"${t.id}","${t.nama}","${t.kategori || 'U-12'}","${t.pelatih}","${t.asst}","${t.medis}","${t.kitman}","${t.username}","${t.verified ? 'Verifikasi' : 'Belum Verifikasi'}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "data_tim_lts_palu.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showAlert("Export Data Tim ke CSV Berhasil!", true);
+        }
+
+        function exportPlayersCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,ID,Nama Tim,Nama Pemain,NISN,No Punggung,Posisi,Tempat Lahir,Tanggal Lahir,Sekolah,No HP,Status Verifikasi\n";
+            state.players.forEach(p => {
+                csvContent += `"${p.id}","${p.teamName}","${p.nama}","${p.nisn}","${p.noPunggung}","${p.posisi}","${p.tempatLahir}","${p.tglLahir}","${p.sekolah}","${p.hp}","${p.verified ? 'Verifikasi' : 'Belum Verifikasi'}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "data_pemain_lts_palu.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showAlert("Export Data Pemain ke CSV Berhasil!", true);
+        }
+
+        // ================= CETAK KARTU PEMAIN UKURAN A5 PDF =================
+        function cetakKartuA5PerOrang(playerId) {
+            const player = state.players.find(p => p.id === playerId);
+            if (!player) return;
+            renderPrintCards([player]);
+            window.print();
+        }
+
+        function cetakKartuA5Semua() {
+            const teamTitle = document.getElementById('selectedTeamTitle').textContent;
+            const teamName = teamTitle.replace('Kelola Pemain - ', '').split(' [')[0];
+            const team = state.teams.find(t => t.nama === teamName);
+
+            if (!team) return showAlert("Pilih tim terlebih dahulu!", false);
+
+            const teamPlayers = state.players.filter(p => p.teamId === team.id);
+            if (teamPlayers.length === 0) return showAlert("Tidak ada pemain di tim ini!", false);
+
+            renderPrintCards(teamPlayers);
+            window.print();
+        }
+
+        function renderPrintCards(playersList) {
+            const printArea = document.getElementById('printableArea');
+            printArea.innerHTML = '';
+
+            playersList.forEach(p => {
+                printArea.insertAdjacentHTML('beforeend', `
+                    <div class="w-[148mm] h-[210mm] border-4 border-blue-900 bg-white p-6 m-auto flex flex-col justify-between page-break font-sans relative overflow-hidden mb-8">
+                        <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-red-600 text-white p-4 -mx-6 -mt-6 flex items-center justify-between border-b-4 border-yellow-400">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-trophy text-yellow-400 text-3xl"></i>
+                                <div>
+                                    <h2 class="font-extrabold text-lg leading-none">KARTU PEMAIN RESMI</h2>
+                                    <span class="text-xs font-bold text-yellow-300 tracking-wider">LIGA TOP SKOR ZONA PALU</span>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-white text-blue-900 font-extrabold px-2.5 py-1 rounded">A5 ID CARD</span>
+                        </div>
+
+                        <div class="flex gap-6 my-auto items-center">
+                            <div class="w-1/3 text-center">
+                                <img src="${p.foto}" class="w-36 h-48 object-cover rounded-xl border-4 border-slate-200 shadow-md mx-auto">
+                                <div class="mt-2 bg-red-600 text-white font-extrabold text-2xl py-1 rounded-lg">#${p.noPunggung}</div>
+                            </div>
+                            <div class="w-2/3 space-y-2 text-slate-800 text-xs">
+                                <div class="border-b pb-1">
+                                    <span class="text-slate-400 uppercase text-[10px] font-bold block">Nama Lengkap</span>
+                                    <span class="font-bold text-base text-slate-900">${p.nama}</span>
+                                </div>
+                                <div class="border-b pb-1">
+                                    <span class="text-slate-400 uppercase text-[10px] font-bold block">Tim</span>
+                                    <span class="font-bold text-blue-700">${p.teamName}</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 border-b pb-1">
+                                    <div>
+                                        <span class="text-slate-400 uppercase text-[10px] font-bold block">NISN</span>
+                                        <span class="font-mono font-bold">${p.nisn}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 uppercase text-[10px] font-bold block">Posisi</span>
+                                        <span class="font-bold">${p.posisi}</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 border-b pb-1">
+                                    <div>
+                                        <span class="text-slate-400 uppercase text-[10px] font-bold block">TTL</span>
+                                        <span class="font-semibold">${p.tempatLahir}, ${p.tglLahir}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 uppercase text-[10px] font-bold block">Dominan Kaki</span>
+                                        <span class="font-semibold">${p.kaki}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 uppercase text-[10px] font-bold block">Sekolah</span>
+                                    <span class="font-semibold">${p.sekolah}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t-2 border-dashed border-slate-300 pt-3 -mx-6 -mb-6 p-4 bg-slate-50 flex justify-between items-center text-[10px]">
+                            <div>
+                                <span class="font-bold block text-slate-700">Panitia Pelaksana LTS Palu</span>
+                                <span class="text-slate-500">Verified ID: ${p.id}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-bold text-green-700 border border-green-600 px-2 py-0.5 rounded bg-green-50">STATUS: VERIFIKASI</span>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        // ================= FITUR SCAN PEMAIN =================
+        function renderAdminScanSelect() {
+            const select = document.getElementById('scanSelectTeam');
+            select.innerHTML = '<option value="">-- Pilih Tim --</option>';
+            state.teams.filter(t => t.verified).forEach(t => {
+                select.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(t.id)}">${escapeHtml(t.nama)} [${escapeHtml(t.kategori || 'U-12')}]</option>`);
+            });
+        }
+
+        function initScanList() {
+            const teamId = document.getElementById('scanSelectTeam').value;
+            const historyTable = document.getElementById('scanHistoryTable');
+            historyTable.innerHTML = '';
+
+            const logs = state.scannedList.filter(s => s.teamId === teamId);
+            logs.forEach(l => {
+                historyTable.insertAdjacentHTML('beforeend', `
+                    <tr class="border-b">
+                        <td class="p-3 font-bold">${escapeHtml(l.nama)}</td>
+                        <td class="p-3 font-bold text-red-600">#${escapeHtml(l.noPunggung)}</td>
+                        <td class="p-3 font-mono text-xs">${escapeHtml(l.nisn)}</td>
+                        <td class="p-3 text-xs">${escapeHtml(l.waktu)}</td>
+                        <td class="p-3"><span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded">SIAP MAIN</span></td>
+                    </tr>
+                `);
+            });
+        }
+
+        function startScanner() {
+            const selectedTeam = document.getElementById('scanSelectTeam').value;
+            if(!selectedTeam) return showAlert("Pilih tim bertanding terlebih dahulu!", false);
+
+            if(!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+            }
+            
+            html5QrcodeScanner.render((qrCodeMessage) => {
+                processScanResult(qrCodeMessage);
+            }, (error) => {
+                // scanning...
+            });
+        }
+
+        function stopScanner() {
+            if(html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+            }
+        }
+
+        async function processScanResult(scannedNisn) {
+            const selectedTeamId = document.getElementById('scanSelectTeam').value;
+            const player = state.players.find(p => p.nisn === scannedNisn || p.id === scannedNisn);
+
+            if(!player) {
+                return showAlert("Scan Gagal: Pemain tidak terdaftar!", false);
+            }
+
+            if(player.teamId !== selectedTeamId) {
+                return showAlert(`Scan Gagal: Pemain ${player.nama} bukan anggota tim ini!`, false);
+            }
+
+            // Record Scan
+            const timeNow = new Date().toLocaleTimeString();
+            const scanRecord = {
+                teamId: selectedTeamId,
+                nama: player.nama,
+                noPunggung: player.noPunggung,
+                nisn: player.nisn,
+                waktu: timeNow
+            };
+            if (API_ENABLED) {
+                try { await adminApiAction('addScan', { ...scanRecord, playerId: player.id }); }
+                catch (err) { return showAlert(`Gagal menyimpan hasil scan: ${err.message}`, false); }
+            }
+            state.scannedList.push(scanRecord);
+            initScanList();
+            showAlert(`SCAN BERHASIL: ${player.nama} (#${player.noPunggung}) Sah Bertanding!`);
+        }
+
+        // ================= MODAL & EDIT PASSWORD ADMIN =================
+        function openChangePasswordModal() {
+            document.getElementById('modalPass').classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        async function saveNewAdminPass() {
+            const newP = document.getElementById('newAdminPass').value;
+            if (!newP || newP.length < 8) return showAlert("Password baru minimal 8 karakter.", false);
+            if (API_ENABLED) {
+                try { await adminApiAction('changeAdminPassword', { password: newP }); }
+                catch (err) { return showAlert(`Gagal mengubah password: ${err.message}`, false); }
+            } else state.adminPass = newP;
+            closeModal('modalPass');
+            document.getElementById('newAdminPass').value = '';
+            showAlert("Password Admin Berhasil Diubah!", true);
+        }
+
+        // Integrasi backend dipanggil melalui Cloudflare Worker; semua rahasia berada di server.
+        const DEFAULT_PLAYER_PHOTO = "https://placehold.co/200x250/0f172a/ffffff?text=Foto+Pemain";
+        const API_BASE_URL = String(window.LTS_CONFIG?.API_BASE_URL || '').replace(/\/+$/, '');
+        const API_ENABLED = Boolean(API_BASE_URL);
+        let adminAuthToken = null;
+        let teamAuthToken = null;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+
+        async function apiRequest(path, { method = 'GET', body = undefined, token = null } = {}) {
+            if (!API_ENABLED) throw new Error('URL Cloudflare Worker belum diatur pada public/config.js.');
+            const headers = { 'Accept': 'application/json' };
+            if (body !== undefined) headers['Content-Type'] = 'application/json';
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            const response = await fetch(`${API_BASE_URL}${path}`, {
+                method, headers, body: body === undefined ? undefined : JSON.stringify(body)
+            });
+            let result;
+            try { result = await response.json(); }
+            catch (_) { throw new Error(`Respons API tidak valid (HTTP ${response.status}).`); }
+            if (!response.ok || !result.ok) throw new Error(result.error || `Permintaan gagal (HTTP ${response.status}).`);
+            return result.data;
+        }
+
+        async function fileToPayload(file, maxMb = 4) {
+            if (!file) throw new Error('Ada berkas wajib yang belum dipilih.');
+            if (file.size > maxMb * 1024 * 1024) throw new Error(`${file.name} melebihi batas ${maxMb} MB.`);
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            let binary = '';
+            const chunk = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+            const ext = String(file.name).split('.').pop().toLowerCase();
+            const inferred = ({ jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', pdf: 'application/pdf' })[ext] || 'application/octet-stream';
+            return { name: file.name, mimeType: file.type || inferred, base64: btoa(binary) };
+        }
+
+        async function adminApiAction(action, data = {}) {
+            if (!API_ENABLED) return null;
+            if (!adminAuthToken) throw new Error('Sesi admin tidak aktif. Silakan login kembali.');
+            return apiRequest('/api/admin/action', { method: 'POST', token: adminAuthToken, body: { action, data } });
+        }
+
+        function applySettings(settings = {}) {
+            if (settings.heroNarrative !== undefined) state.heroNarrative = settings.heroNarrative;
+            if (settings.footerNarrative !== undefined) state.footerNarrative = settings.footerNarrative;
+            if (settings.sekretariat) state.sekretariat = { ...state.sekretariat, ...settings.sekretariat };
+            renderHeroNarrative(); renderFooterNarrative(); renderSekretariatInfo();
+        }
+
+        async function loadPublicData() {
+            if (!API_ENABLED) {
+                console.warn('LTS Palu: API_BASE_URL belum diatur. Aplikasi berjalan dengan data demo lokal.');
+                return;
+            }
+            try {
+                const data = await apiRequest('/api/public/bootstrap');
+                state.categories = data.categories || [];
+                state.teams = data.teams || [];
+                state.players = [];
+                state.scannedList = [];
+                state.currentLoggedInTeam = null;
+                state.news = data.news || [];
+                state.gallery = data.gallery || [];
+                applySettings(data.settings || {});
+                populateKategoriDropdowns(); populateTeamSelect();
+                renderNews(); renderGallery(); renderAdminTeams(); renderAdminKategoriTable(); renderAdminScanSelect();
+            } catch (err) {
+                showAlert(`Backend belum dapat dihubungi: ${err.message}`, false);
+            }
+        }
+
+        function applyAdminBootstrap(data) {
+            state.categories = data.categories || [];
+            state.teams = data.teams || [];
+            state.players = data.players || [];
+            state.scannedList = data.scannedList || [];
+            state.news = data.news || state.news;
+            state.gallery = data.gallery || state.gallery;
+            applySettings(data.settings || {});
+            populateKategoriDropdowns(); populateTeamSelect();
+            renderNews(); renderGallery(); renderAdminScanSelect(); initScanList();
+        }
+
+        async function hydratePrivatePhotos(players, token) {
+            if (!API_ENABLED || !token) return;
+            await Promise.all((players || []).map(async player => {
+                if (!player.photoFileId) { player.foto = player.foto || DEFAULT_PLAYER_PHOTO; return; }
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/private/photo/${encodeURIComponent(player.id)}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) player.foto = URL.createObjectURL(await response.blob());
+                    else player.foto = DEFAULT_PLAYER_PHOTO;
+                } catch (_) { player.foto = DEFAULT_PLAYER_PHOTO; }
+            }));
+        }
+    </script>
+</body>
+</html>

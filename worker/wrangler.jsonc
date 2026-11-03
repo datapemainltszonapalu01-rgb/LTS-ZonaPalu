@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lts-palu-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-04",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://lts-palu-web.pages.dev,http://localhost:8788"
+  }
+}
