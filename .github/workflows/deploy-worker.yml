@@ -19,6 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Deploy the Worker first so the script exists before secrets are uploaded.
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:
@@ -26,6 +27,15 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker
           command: deploy --config wrangler.jsonc
+
+      # Upload secrets only after the Worker has been created/deployed.
+      - name: Upload Worker secrets
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: whoami
           secrets: |
             GAS_WEB_APP_URL
             GAS_SHARED_SECRET
